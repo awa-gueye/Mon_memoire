@@ -1,0 +1,12 @@
+# Configuration de deploiement Render (https://render.com)
+# Render lit ce fichier automatiquement lors de la creation du service.
+services:
+  - type: web
+    name: dashboard-cgu
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn wsgi:server --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: HF_TOKEN
+        sync: false          # a renseigner manuellement dans l'interface Render
