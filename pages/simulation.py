@@ -31,11 +31,11 @@ PAQUETS_COLORS = {'B': '#1565C0', 'A': '#2E9E5B', 'O': '#E8841A', 'Pl': '#8E44AD
 TRANCHES       = {'B': '0 - 5 M', 'A': '5 - 15 M', 'O': '15 - 30 M', 'Pl': '30 - 50 M'}
 
 BRANCHES_LABEL = {
-    'Sante_CMU':              'Sante (CMU)',
+    'Sante_CMU':              'Santé (CMU)',
     'Accidents_du_travail':   'Accidents du travail',
-    'Maternite':              'Maternite',
+    'Maternite':              'Maternité',
     'Prestations_familiales': 'Prestations familiales',
-    'Invalidite_Deces':       'Invalidite/Deces',
+    'Invalidite_Deces':       'Invalidité/Décés',
     'Retraite':               'Retraite',
 }
 BRANCHES_PAR_PAQUET = {
@@ -214,9 +214,9 @@ def _build_resultats_content(profil):
     lignes_p = [
         ('Paquet',                        f'{label} ({TRANCHES[paquet]} FCFA CA/an)'),
         ('Age',                           f'{age} ans'),
-        ('Depart a la retraite',          f'{anret}' if anret<=2066 else '> 2066'),
+        ('Départ à la retraite',          f'{anret}' if anret<=2066 else '> 2066'),
         ('Conjointes a charge',           str(n_conj)),
-        ('Enfants a charge',              str(min(n_enf,6))),
+        ('Enfants à charge',              str(min(n_enf,6))),
         ('Bénéficiaires CMU',             str(c['n_benef'])),
         ('Années de cotisation restantes',f'{max(0,min(60-age,40))} an(s)'),
     ]
@@ -420,8 +420,7 @@ layout = html.Div([
                                marks={i:str(i) for i in range(5)},
                                tooltip={'placement':'bottom','always_visible':False}),
                     html.P("Chaque conjointe est couverte par la CMU. Dans les menages "
-                           "polygames, le cotisant ne figure qu'une seule fois dans le "
-                           "registre des affilies.", className='param-note'),
+                           "", className='param-note'),
                 ]),
 
                 html.Div(className='param-group', children=[
@@ -432,8 +431,7 @@ layout = html.Div([
                     dcc.Slider(id='sl-sp-enf', min=0, max=6, step=1, value=2,
                                marks={i:str(i) for i in range(7)},
                                tooltip={'placement':'bottom','always_visible':False}),
-                    html.P("Plafond : 6 enfants, conformement au bareme CSS (CLEISS, 2026). "
-                           "Affecte les prestations familiales et la couverture sante CMU.",
+                    html.P("Plafond : 6 enfants, conformément au bareme CSS (CLEISS, 2026). ",
                            className='param-note'),
                 ]),
 
