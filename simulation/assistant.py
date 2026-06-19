@@ -20,7 +20,7 @@ import os
 #   - "meta-llama/Llama-3.3-70B-Instruct"
 #   - "Qwen/Qwen2.5-72B-Instruct"
 #   - "mistralai/Mistral-7B-Instruct-v0.3"  (plus leger)
-MODELE_DEFAUT = "mistralai/Mistral-7B-Instruct-v0.3"
+MODELE_DEFAUT = "Qwen/Qwen2.5-7B-Instruct"
 HF_BASE_URL   = "https://router.huggingface.co/v1"
 
 
