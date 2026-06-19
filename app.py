@@ -8,12 +8,21 @@ from dash import dcc, html, callback, Input, Output, State
 app = dash.Dash(
     __name__,
     suppress_callback_exceptions=True,
+    serve_locally=False,   # charge plotly.js et les libs depuis un CDN rapide
     external_stylesheets=[
         'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
     ],
     title='CGU Social - Sénégal',
 )
 server = app.server
+
+# Compression gzip : reduit fortement le poids des donnees transferees
+# (utile sur connexion lente). Sans effet si flask-compress n'est pas installe.
+try:
+    from flask_compress import Compress
+    Compress(server)
+except Exception:
+    pass
 
 
 def sn_stripe():
