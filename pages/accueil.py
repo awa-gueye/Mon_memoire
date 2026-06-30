@@ -47,7 +47,7 @@ layout = html.Div([
         html.Div(className='hero-content', children=[
             html.Div(className='hero-badge', children=[
                 html.I(className='fa-solid fa-star'),
-                ' Cellule des Etudes et de Planification - Ministère des Finances',
+                ' Cellule d\'Etudes et de Planification - Ministère des Finances',
             ]),
             html.H1(className='hero-title', children=[
                 'Simulation actuarielle du régime de ',
