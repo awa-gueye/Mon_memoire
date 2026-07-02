@@ -41,7 +41,7 @@ def navbar():
         ('/resultats',   'resultats', 'fa-table',        'Résultats'),
         ('/simulation',  'simul',     'fa-user-check',   'Simulation individuelle'),
     ]
-    return html.Div([
+    return html.Div(className='nav-shell', children=[
         sn_stripe(),
         html.Nav(className='navbar', children=[
             html.Div(className='nav-brand', children=[
@@ -205,16 +205,19 @@ NAV_BTNS = {
     prevent_initial_call=True,
 )
 def navigate(*args):
-    from dash import callback_context
+    from dash import callback_context, no_update
     ctx = callback_context
     if not ctx.triggered:
-        return '/'
+        return no_update
     tid = ctx.triggered[0]['prop_id'].split('.')[0]
     if tid in NAV_BTNS:
         return NAV_BTNS[tid]
     if tid == 'store-nav':
-        return args[-1] or '/'
-    return '/'
+        v = args[-1]
+        if isinstance(v, dict):          # jeton {'p': chemin, 'k': compteur}
+            return v.get('p', '/')
+        return v or '/'
+    return no_update
 
 
 @callback(
