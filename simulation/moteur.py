@@ -24,7 +24,8 @@ PARAMS_REF = {
     # alpha = taux d'accroissement annuel des cotisants (delta_n = alpha*(1+beta)^n)
     "alpha": 0.04, "beta": 0.01, "tau_abd": 0.0, "tau_inf": 0.02,
     "SMIG": 64224, "gamma": 0.10, "CMU_an": 7000,
-    "plaf_css": 63000, "taux_atmp": 0.03, "alloc_fam": 2600,
+    # taux_atmp = frequence annuelle d'accident (p_at) ; dur_at = duree moyenne d'ITT (jours)
+    "plaf_css": 63000, "taux_atmp": 0.03, "dur_at": 30, "alloc_fam": 2600,
     "ISF": 4.0, "alloc_pre": 20250, "alloc_mat": 54000,
     "dur_conge": 98, "taux_ipres": 0.14, "VPS0": 24.75,
     "lambda_sa": 0.50,
@@ -64,7 +65,11 @@ def calculer_cotisations(p):
     pi_sa = p["CMU_an"] / 12
     n_conj = max(0, min(int(p.get("conjoint", 0)), 4))   # 0 a 4 conjoints (polygame)
     pi_sa = pi_sa * (1 + n_conj)                         # prime sante proportionnelle
-    pi_at = p["taux_atmp"] * p["plaf_css"]
+    # AT/MP tarifee par esperance de sinistre : frequence x severite (barometre CSS/CIPRES)
+    w_j  = p["plaf_css"] / 22                       # salaire journalier de reference
+    D_at = p.get("dur_at", 30)                      # duree moyenne d'incapacite (jours)
+    K_at = 0.5*w_j*min(D_at, 28) + (2/3)*w_j*max(D_at - 28, 0)   # cout moyen d'un sinistre
+    pi_at = p["taux_atmp"] * K_at / 12              # prime mensuelle = p_at x K_at / 12
     n_e = min(int(p.get("n_enfants", 2)), 6)
     K_ma = (2/3)*(p["SMIG"]/30)*p["dur_conge"] + p["alloc_pre"] + p["alloc_mat"]
     pi_ma_f = (p["ISF"]/35) * K_ma / 12
@@ -97,12 +102,14 @@ def calculer_cotisations(p):
         idd  = pi_id * g * (1 - p["lambda_id"])
         eid  = pi_id * g * p["lambda_id"]
         lr   = p["lambda_re_O"] if pk == "O" else p["lambda_re_Pl"]
-        re   = pi_re * g * (1 - lr)
-        ere  = pi_re * g * lr
+        # Cotisation retraite proportionnelle a la cible : Platine vise 40/30, Or 30/30
+        pi_re_pk = pi_re if pk == "O" else pi_re * (40/30)
+        re   = pi_re_pk * g * (1 - lr)
+        ere  = pi_re_pk * g * lr
         cotis[pk] = {"S_trav": sa+at+ma+pf+idd+re,
                      "S_etat": esa+eat+ema+epf+eid+ere,
-                     "pi_b": pi_sa+pi_at+f*pi_ma_f+pi_pf+pi_id+pi_re,
-                     "pi_id": pi_id, "pi_re": pi_re}
+                     "pi_b": pi_sa+pi_at+f*pi_ma_f+pi_pf+pi_id+pi_re_pk,
+                     "pi_id": pi_id, "pi_re": pi_re_pk}
     return cotis
 
 
@@ -153,7 +160,9 @@ def simuler(params_utilisateur=None):
         pi_sa = p["CMU_an"]/12
         _nc = max(0, min(int(p.get("conjoint",0)), 4))
         pi_sa *= (1 + _nc)
-        pi_at = p["taux_atmp"]*p["plaf_css"]
+        _wj = p["plaf_css"]/22; _Dat = p.get("dur_at", 30)
+        _Kat = 0.5*_wj*min(_Dat,28) + (2/3)*_wj*max(_Dat-28,0)
+        pi_at = p["taux_atmp"]*_Kat/12
         n_e   = min(int(p.get("n_enfants",2)),6)
         pi_pf = p["alloc_fam"]*max(n_e,1)
 
