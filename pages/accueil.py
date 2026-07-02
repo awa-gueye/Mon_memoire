@@ -3,6 +3,27 @@ pages/accueil.py - Page d'accueil (style inspire de sunu-souba.com, palette bleu
 Navigation via store-nav -> navigate() dans app.py (un seul Output sur store-nav).
 """
 from dash import html, dcc, callback, Input, Output, callback_context
+<<<<<<< HEAD
+=======
+
+
+# ---------------------------------------------------------------- composants --
+def _stat(val, lbl):
+    return html.Div(className='sn-stat', children=[
+        html.Div(val, className='sn-stat-val'),
+        html.Div(lbl, className='sn-stat-lbl'),
+    ])
+
+
+def _feature(num, ico, titre, texte, lien, btn_id):
+    return html.Button(id=btn_id, n_clicks=0, className='sn-feature', children=[
+        html.Div(num, className='sn-feature-num'),
+        html.Div(className='sn-feature-ico', children=[html.I(className=f'fa-solid {ico}')]),
+        html.Div(titre, className='sn-feature-title'),
+        html.Div(texte, className='sn-feature-text'),
+        html.Div(className='sn-feature-link', children=[lien, html.I(className='fa-solid fa-arrow-right')]),
+    ])
+>>>>>>> 81c332a929374abe8f37fcbe77945e644f78ca97
 
 
 # ---------------------------------------------------------------- composants --
@@ -38,6 +59,13 @@ def _paquet(nom, couleur, imgnum, tranche, branches, cotisation):
             html.Div(className='pkg-badge',
                      children=[html.I(className='fa-solid fa-coins'), ' ', cotisation]),
         ]),
+<<<<<<< HEAD
+=======
+        html.Div(tranche, className='paquet-card-tranche'),
+        html.Ul([html.Li(b) for b in branches], className='paquet-card-branches'),
+        html.Div(className='paquet-badge', style={'color': couleur, 'background': '#EEF4FC'},
+                 children=[html.I(className='fa-solid fa-coins'), ' ', cotisation]),
+>>>>>>> 81c332a929374abe8f37fcbe77945e644f78ca97
     ])
 
 
@@ -190,6 +218,7 @@ layout = html.Div([
             html.H2('Architecture du régime', className='section-heading'),
             html.Div(className='section-sep'),
             html.Div(className='sn-cards4', children=[
+<<<<<<< HEAD
                 _paquet('Bronze',  '#2196F3', 1, '0 - 5 M FCFA',
                         ['Santé (CMU)', 'AT/MP'], '393 FCFA/mois'),
                 _paquet('Argent',  '#2ECC71', 2, '5 - 15 M FCFA',
@@ -198,6 +227,16 @@ layout = html.Div([
                         ['Santé', 'AT/MP', 'Maternité', 'Prest. fam.', 'Invalidité/Décès', 'Retraite'],
                         '8 208 FCFA/mois'),
                 _paquet('Platine', '#B06BE0', 4, '30 - 50 M FCFA',
+=======
+                _paquet('Bronze',  '#1565C0', '0 - 5 M FCFA',
+                        ['Santé (CMU)', 'AT/MP'], '393 FCFA/mois'),
+                _paquet('Argent',  '#2E9E5B', '5 - 15 M FCFA',
+                        ['Santé (CMU)', 'AT/MP', 'Maternité', 'Prest. familiales'], '2 878 FCFA/mois'),
+                _paquet('Or',      '#E8841A', '15 - 30 M FCFA',
+                        ['Santé', 'AT/MP', 'Maternité', 'Prest. fam.', 'Invalidité/Décès', 'Retraite'],
+                        '8 208 FCFA/mois'),
+                _paquet('Platine', '#8E44AD', '30 - 50 M FCFA',
+>>>>>>> 81c332a929374abe8f37fcbe77945e644f78ca97
                         ['Santé', 'AT/MP', 'Maternité', 'Prest. familiales', 'Invalidité/Décès', 'Retraite'],
                         '11 053 FCFA/mois'),
             ]),
