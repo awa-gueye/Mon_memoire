@@ -1,4 +1,5 @@
 """pages/dashboard.py - Tableau de bord"""
+import re
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -134,13 +135,25 @@ def _chart(titre, sub, fig, height='300px'):
 
 
 def _kpi(label, value, icon, color, bg):
+    # Extrait la cible numerique du texte formate (US : virgule=milliers, point=decimal)
+    # pour alimenter le compteur anime (assets/countup.js), sans changer l'affichage.
+    data = {}
+    m = re.search(r'-?\d[\d,]*(?:\.\d+)?', value)
+    if m:
+        num = m.group(0)
+        data = {
+            'data-count-to': str(float(num.replace(',', ''))),
+            'data-decimals': str(len(num.split('.')[1]) if '.' in num else 0),
+            'data-sep':      ',' if ',' in num else '',
+            'data-suffix':   value[m.end():],
+        }
     return html.Div(
         className='kpi-card',
         style={'--kpi-color': color, '--kpi-bg': bg},
         children=[
             html.Div(className='kpi-ico', children=[html.I(className='fa-solid ' + icon)]),
             html.Div(children=[
-                html.Div(value, className='kpi-val'),
+                html.Div(value, className='kpi-val', **data),
                 html.Div(label, className='kpi-lbl'),
             ]),
         ],
