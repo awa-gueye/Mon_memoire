@@ -407,7 +407,6 @@ layout = html.Div([
                     ]),
                     dcc.Slider(id='sl-sp-age', min=15, max=59, step=1, value=35,
                                marks=None,
-                               tooltip={'placement':'bottom','always_visible':False},
                                updatemode='drag'),
                 ]),
 
@@ -418,7 +417,7 @@ layout = html.Div([
                     ]),
                     dcc.Slider(id='sl-sp-conj', min=0, max=4, step=1, value=0,
                                marks={i:str(i) for i in range(5)},
-                               tooltip={'placement':'bottom','always_visible':False}),
+                               ),
                     html.P("Chaque conjointe est couverte par la CMU. Dans les menages "
                            "", className='param-note'),
                 ]),
@@ -430,7 +429,7 @@ layout = html.Div([
                     ]),
                     dcc.Slider(id='sl-sp-enf', min=0, max=6, step=1, value=2,
                                marks={i:str(i) for i in range(7)},
-                               tooltip={'placement':'bottom','always_visible':False}),
+                               ),
                     html.P("Plafond : 6 enfants, conformément au bareme CSS (CLEISS, 2026). ",
                            className='param-note'),
                 ]),

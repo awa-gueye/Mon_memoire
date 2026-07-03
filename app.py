@@ -41,7 +41,7 @@ def navbar():
         ('/resultats',   'resultats', 'fa-table',        'Résultats'),
         ('/simulation',  'simul',     'fa-user-check',   'Simulation individuelle'),
     ]
-    return html.Div([
+    return html.Div(className='nav-shell', children=[
         sn_stripe(),
         html.Nav(className='navbar', children=[
             html.Div(className='nav-brand', children=[
@@ -205,16 +205,19 @@ NAV_BTNS = {
     prevent_initial_call=True,
 )
 def navigate(*args):
-    from dash import callback_context
+    from dash import callback_context, no_update
     ctx = callback_context
     if not ctx.triggered:
-        return '/'
+        return no_update
     tid = ctx.triggered[0]['prop_id'].split('.')[0]
     if tid in NAV_BTNS:
         return NAV_BTNS[tid]
     if tid == 'store-nav':
-        return args[-1] or '/'
-    return '/'
+        v = args[-1]
+        if isinstance(v, dict):          # jeton {'p': chemin, 'k': compteur}
+            return v.get('p', '/')
+        return v or '/'
+    return no_update
 
 
 @callback(
@@ -231,11 +234,11 @@ def update_nav_active(pathname):
         'resultats': '/resultats',
         'simul':     '/simulation',
     }
-    pathname = pathname or '/'
-    return [
-        'nav-link active' if pm[p] == pathname else 'nav-link'
-        for p in ['accueil', 'params', 'dashboard', 'resultats', 'simul']
-    ]
+    order = ['accueil', 'params', 'dashboard', 'resultats', 'simul']
+    path = (pathname or '/').rstrip('/') or '/'
+    if path not in pm.values():        # tout chemin inconnu retombe sur l'accueil
+        path = '/'                     # (coherent avec le fallback de render_page)
+    return ['nav-link active' if pm[p] == path else 'nav-link' for p in order]
 
 
 @callback(
@@ -252,7 +255,7 @@ def render_page(pathname, params_data):
     from pages.simulation   import layout as pg_sim
     from simulation.moteur  import simuler
 
-    pathname = pathname or '/'
+    pathname = (pathname or '/').rstrip('/') or '/'
 
     if pathname == '/':
         return pg_acc

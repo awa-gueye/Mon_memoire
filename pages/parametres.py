@@ -14,7 +14,6 @@ def _sl(pid, label, default, mn, mx, step, note=None):
         ]),
         dcc.Slider(id=f'sl-{pid}', min=mn, max=mx, step=step, value=default,
                    marks=None,
-                   tooltip={'placement': 'bottom', 'always_visible': False},
                    updatemode='drag'),
         *([html.P(note, className='param-note')] if note else []),
     ])
@@ -28,7 +27,6 @@ def _sp(pid, label, default, mn, mx, step, note=None):
         ]),
         dcc.Slider(id=f'sl-{pid}', min=mn, max=mx, step=step, value=default,
                    marks=None,
-                   tooltip={'placement': 'bottom', 'always_visible': False},
                    updatemode='drag'),
         *([html.P(note, className='param-note')] if note else []),
     ])
