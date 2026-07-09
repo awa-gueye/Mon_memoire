@@ -214,7 +214,7 @@ def _build_resultats_content(profil):
     lignes_p = [
         ('Paquet',                        f'{label} ({TRANCHES[paquet]} FCFA CA/an)'),
         ('Age',                           f'{age} ans'),
-        ('Départ à la retraite',          f'{anret}' if anret<=2066 else '> 2066'),
+        ('Départ à la retraite',          f'{anret}' if anret<=2050 else '> 2050'),
         ('Conjointes a charge',           str(n_conj)),
         ('Enfants à charge',              str(min(n_enf,6))),
         ('Bénéficiaires CMU',             str(c['n_benef'])),
@@ -294,7 +294,7 @@ def _build_resultats_content(profil):
         x=annees, y=reel, name='Cotisation réelle (valeur 2027)',
         mode='lines', line=dict(color='#1B5E20',width=2,dash='dot'),
         hovertemplate='Reel : %{y:,.0f} FCFA/mois<extra></extra>'))
-    if anret <= 2066:
+    if anret <= 2050:
         fig_evol.add_vline(x=anret,
             line=dict(dash='dash',color='#C62828',width=1.5),
             annotation_text=f'Retraite ({anret})',
@@ -407,7 +407,6 @@ layout = html.Div([
                     ]),
                     dcc.Slider(id='sl-sp-age', min=15, max=59, step=1, value=35,
                                marks=None,
-                               tooltip={'placement':'bottom','always_visible':False},
                                updatemode='drag'),
                 ]),
 
@@ -418,7 +417,7 @@ layout = html.Div([
                     ]),
                     dcc.Slider(id='sl-sp-conj', min=0, max=4, step=1, value=0,
                                marks={i:str(i) for i in range(5)},
-                               tooltip={'placement':'bottom','always_visible':False}),
+                               ),
                     html.P("Chaque conjointe est couverte par la CMU. Dans les menages "
                            "", className='param-note'),
                 ]),
@@ -430,7 +429,7 @@ layout = html.Div([
                     ]),
                     dcc.Slider(id='sl-sp-enf', min=0, max=6, step=1, value=2,
                                marks={i:str(i) for i in range(7)},
-                               tooltip={'placement':'bottom','always_visible':False}),
+                               ),
                     html.P("Plafond : 6 enfants, conformément au bareme CSS (CLEISS, 2026). ",
                            className='param-note'),
                 ]),

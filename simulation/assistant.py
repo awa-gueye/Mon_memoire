@@ -63,7 +63,7 @@ def construire_contexte(df):
     deficit = df.loc[df['Solde_cumule_M'] < 0, 'annee']
     annee_deficit = int(deficit.min()) if not deficit.empty else None
 
-    # Branche la plus couteuse en 2066
+    # Branche la plus couteuse en 2050
     branches = {
         'Sante':            d40['Dep_sante_M'],
         'AT/MP':            d40['Dep_atmp_M'],
@@ -75,31 +75,31 @@ def construire_contexte(df):
     branche_max = max(branches, key=branches.get)
 
     lignes = [
-        "DONNEES DE LA SIMULATION EN COURS (source de verite, horizon 2027-2066) :",
+        "DONNEES DE LA SIMULATION EN COURS (source de verite, horizon 2027-2050) :",
         "",
         f"- Cotisants actifs en 2027 : {d1['CT_total']:,.0f}",
-        f"- Cotisants actifs en 2066 : {d40['CT_total']:,.0f}",
-        f"- Pensionnaires en 2066 : {d40['NbPens_total']:,.0f}",
-        f"- Recettes annuelles 2066 : {d40['Recettes_M']:,.1f} millions FCFA",
-        f"- Depenses annuelles 2066 : {d40['Depenses_M']:,.1f} millions FCFA",
-        f"- Solde cumule final (2066) : {sol_fin:,.1f} millions FCFA",
+        f"- Cotisants actifs en 2050 : {d40['CT_total']:,.0f}",
+        f"- Pensionnaires en 2050 : {d40['NbPens_total']:,.0f}",
+        f"- Recettes annuelles 2050 : {d40['Recettes_M']:,.1f} millions FCFA",
+        f"- Depenses annuelles 2050 : {d40['Depenses_M']:,.1f} millions FCFA",
+        f"- Solde cumule final (2050) : {sol_fin:,.1f} millions FCFA",
         f"- Regime financierement viable sur tout l'horizon : {'OUI' if viable else 'NON'}",
     ]
     if annee_deficit:
         lignes.append(f"- Premiere annee de deficit cumule : {annee_deficit}")
     lignes += [
-        f"- Taux de couverture de la population cible en 2066 : {d40['Taux_couv']:.1f} %",
-        f"- Branche la plus couteuse en 2066 : {branche_max} "
+        f"- Taux de couverture de la population cible en 2050 : {d40['Taux_couv']:.1f} %",
+        f"- Branche la plus couteuse en 2050 : {branche_max} "
         f"({branches[branche_max]:,.1f} M FCFA)",
         "",
-        "Depenses par branche en 2066 (millions FCFA) :",
+        "Depenses par branche en 2050 (millions FCFA) :",
     ]
     for nom, val in sorted(branches.items(), key=lambda x: -x[1]):
         lignes.append(f"    {nom} : {val:,.1f}")
 
     lignes += [
         "",
-        "Indicateurs redistributifs (apres reforme, 2066) :",
+        "Indicateurs redistributifs (apres reforme, 2050) :",
         f"    FGT(0) incidence de pauvrete : {d40['FGT0_ap']:.4f} (avant reforme : 0,2421)",
         f"    FGT(1) profondeur : {d40['FGT1_ap']:.4f} (avant : 0,0531)",
         f"    FGT(2) severite : {d40['FGT2_ap']:.4f} (avant : 0,0181)",
@@ -110,7 +110,7 @@ def construire_contexte(df):
         "Population cible : 5 653 individus dans l'echantillon EHCVM 2021-2022, "
         "soit environ 1,66 million de travailleurs informels apres ponderation.",
         "",
-        "Effectifs de cotisants par paquet en 2066 :",
+        "Effectifs de cotisants par paquet en 2050 :",
         f"    Bronze : {d40['CT_B']:,.0f}",
         f"    Argent : {d40['CT_A']:,.0f}",
         f"    Or : {d40['CT_O']:,.0f}",
