@@ -56,7 +56,7 @@ def build_resultats(df):
                     html.I(className='fa-solid fa-table'), ' Tableau des résultats',
                 ]),
                 html.P(
-                    'Données annuelles complètes de la simulation sur 40 ans (2027-2066). '
+                    'Données annuelles complètes de la simulation sur 24 ans (2027-2050). '
                     'Montants exprimés en millions de FCFA.',
                     className='page-hdr-sub',
                 ),
@@ -71,7 +71,7 @@ def build_resultats(df):
                                                      else 'fa-triangle-exclamation')),
                     html.Span([
                         html.Strong('Régime viable. ' if viable else 'Régime déficitaire. '),
-                        f'Solde cumulé 2066 : {sol_fin:,.1f} M FCFA.',
+                        f'Solde cumulé 2050 : {sol_fin:,.1f} M FCFA.',
                     ]),
                 ],
             ),

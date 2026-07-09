@@ -1,4 +1,5 @@
 """pages/dashboard.py - Tableau de bord"""
+import re
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -37,23 +38,23 @@ def build_dashboard(df):
                                              else 'fa-triangle-exclamation')),
             html.Span([
                 html.Strong(
-                    'Régime financièrement viable sur tout l\'horizon 2027-2066. '
+                    'Régime financièrement viable sur tout l\'horizon 2027-2050. '
                     if viable else f'Premier déficit cumulé en {n_star}. '
                 ),
-                f'Solde cumulé à 2066 : {sol_fin:,.1f} M FCFA.',
+                f'Solde cumulé à 2050 : {sol_fin/1000:,.1f} Md FCFA.',
             ]),
         ],
     )
 
     kpis = html.Div(className='kpi-grid', children=[
         _kpi('Cotisants 2027',     f"{d1['CT_total']:,.0f}",     'fa-user-plus',    '#1565C0', '#E3F2FD'),
-        _kpi('Cotisants 2066',     f"{d40['CT_total']:,.0f}",    'fa-users',        '#1976D2', '#E3F2FD'),
-        _kpi('Pensionnaires 2066', f"{d40['NbPens_total']:,.0f}", 'fa-person-cane', '#0D47A1', '#E3F2FD'),
-        _kpi('Solde cumulé 2066',  f"{sol_fin:,.0f} M",          'fa-scale-balanced',
+        _kpi('Cotisants 2050',     f"{d40['CT_total']:,.0f}",    'fa-users',        '#1976D2', '#E3F2FD'),
+        _kpi('Pensionnaires 2050', f"{d40['NbPens_total']:,.0f}", 'fa-person-cane', '#0D47A1', '#E3F2FD'),
+        _kpi('Solde cumulé 2050',  f"{sol_fin/1000:,.1f} Md",     'fa-scale-balanced',
              '#1B5E20' if viable else '#C62828',
              '#E8F5E9' if viable else '#FFEBEE'),
-        _kpi('Couverture 2066',    f"{d40['Taux_couv']:.1f} %",  'fa-shield-halved', '#1976D2', '#E3F2FD'),
-        _kpi('Recettes 2066',      f"{d40['Recettes_M']:,.1f} M", 'fa-coins',        '#1565C0', '#E3F2FD'),
+        _kpi('Couverture 2050',    f"{d40['Taux_couv']:.1f} %",  'fa-shield-halved', '#1976D2', '#E3F2FD'),
+        _kpi('Recettes 2050',      f"{d40['Recettes_M']/1000:,.2f} Md", 'fa-coins',        '#1565C0', '#E3F2FD'),
     ])
 
     fgt_avant = [INDICATEURS_BASE['FGT0'], INDICATEURS_BASE['FGT1'], INDICATEURS_BASE['FGT2']]
@@ -82,7 +83,7 @@ def build_dashboard(df):
                        'Evolution du stock total de cotisants et du nombre de pensionnaires',
                        _fig1(df), '320px'),
                 _chart('Répartition des cotisants par paquet',
-                       'Structure des effectifs en 2027 et 2066',
+                       'Structure des effectifs en 2027 et 2050',
                        _fig2_pie(df), '320px'),
             ]),
             # Ligne 2 : barres effectifs
@@ -91,11 +92,11 @@ def build_dashboard(df):
                    _fig3_bars(df), '340px'),
             # Ligne 3 : finances
             _chart('Flux financiers annuels et viabilité du régime',
-                   'Recettes, dépenses, solde annuel et solde cumulé sur 40 ans (2027-2066)',
+                   'Recettes, dépenses, solde annuel et solde cumulé sur 24 ans (2027-2050)',
                    _fig4_finances(df), '430px'),
             # Ligne 4 : depenses par branche (barres) + depenses catastrophiques
             html.Div(className='g2', children=[
-                _chart('Dépenses par branche en 2066',
+                _chart('Dépenses par branche en 2050',
                        'Poids relatif de chaque branche en fin de période',
                        _fig6_bar_branches(df), '320px'),
                 _chart('Évolution des dépenses catastrophiques de santé',
@@ -134,13 +135,25 @@ def _chart(titre, sub, fig, height='300px'):
 
 
 def _kpi(label, value, icon, color, bg):
+    # Extrait la cible numerique du texte formate (US : virgule=milliers, point=decimal)
+    # pour alimenter le compteur anime (assets/countup.js), sans changer l'affichage.
+    data = {}
+    m = re.search(r'-?\d[\d,]*(?:\.\d+)?', value)
+    if m:
+        num = m.group(0)
+        data = {
+            'data-count-to': str(float(num.replace(',', ''))),
+            'data-decimals': str(len(num.split('.')[1]) if '.' in num else 0),
+            'data-sep':      ',' if ',' in num else '',
+            'data-suffix':   value[m.end():],
+        }
     return html.Div(
         className='kpi-card',
         style={'--kpi-color': color, '--kpi-bg': bg},
         children=[
             html.Div(className='kpi-ico', children=[html.I(className='fa-solid ' + icon)]),
             html.Div(children=[
-                html.Div(value, className='kpi-val'),
+                html.Div(value, className='kpi-val', **data),
                 html.Div(label, className='kpi-lbl'),
             ]),
         ],
@@ -182,7 +195,7 @@ def _fig2_pie(df):
     colors = [C['B'], C['A'], C['O'], C['Pl']]
     fig = make_subplots(rows=1, cols=2,
                         specs=[[{'type': 'pie'}, {'type': 'pie'}]],
-                        subplot_titles=['2027', '2066'])
+                        subplot_titles=['2027', '2050'])
     for i, (d, r, c) in enumerate([(d1, 1, 1), (d40, 1, 2)]):
         fig.add_trace(
             go.Pie(labels=labels, values=[d[c2] for c2 in cols],
@@ -198,7 +211,7 @@ def _fig2_pie(df):
 
 
 def _fig3_bars(df):
-    ann_sel = [2027, 2031, 2036, 2041, 2046, 2051, 2056, 2061, 2066]
+    ann_sel = [2027, 2031, 2035, 2039, 2043, 2047, 2050]
     sub = df[df['annee'].isin(ann_sel)]
     fig = go.Figure()
     for col, nom, ch in [('CT_B', 'Bronze', C['B']), ('CT_A', 'Argent', C['A']),
@@ -304,7 +317,7 @@ def _fig7_cotis_bar(df):
     paquets = ['Bronze', 'Argent', 'Or', 'Platine']
     cols    = ['S_trav_B', 'S_trav_A', 'S_trav_O', 'S_trav_Pl']
     # une couleur par annee (degrade de bleu, du clair au fonce = progression)
-    annees  = [(2027, '#90CAF9'), (2046, '#1976D2'), (2066, '#0D2B5E')]
+    annees  = [(2027, '#90CAF9'), (2038, '#1976D2'), (2050, '#0D2B5E')]
     fig = go.Figure()
     for ann_v, coul in annees:
         row = df.loc[df['annee'] == ann_v].iloc[0]
