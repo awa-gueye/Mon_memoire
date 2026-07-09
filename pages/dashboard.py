@@ -41,13 +41,18 @@ def build_dashboard(df):
                     'Régime financièrement viable sur tout l\'horizon 2027-2050. '
                     if viable else f'Premier déficit cumulé en {n_star}. '
                 ),
+<<<<<<< HEAD
                 f'Solde cumulé à 2050 : {sol_fin/1000:,.1f} Md FCFA.',
+=======
+                f'Solde cumulé à 2066 : {sol_fin/1000:,.1f} Md FCFA.',
+>>>>>>> 8bafdf18f3d3f2a4d47aacb4857bc87cb3bc0122
             ]),
         ],
     )
 
     kpis = html.Div(className='kpi-grid', children=[
         _kpi('Cotisants 2027',     f"{d1['CT_total']:,.0f}",     'fa-user-plus',    '#1565C0', '#E3F2FD'),
+<<<<<<< HEAD
         _kpi('Cotisants 2050',     f"{d40['CT_total']:,.0f}",    'fa-users',        '#1976D2', '#E3F2FD'),
         _kpi('Pensionnaires 2050', f"{d40['NbPens_total']:,.0f}", 'fa-person-cane', '#0D47A1', '#E3F2FD'),
         _kpi('Solde cumulé 2050',  f"{sol_fin/1000:,.1f} Md",     'fa-scale-balanced',
@@ -55,6 +60,15 @@ def build_dashboard(df):
              '#E8F5E9' if viable else '#FFEBEE'),
         _kpi('Couverture 2050',    f"{d40['Taux_couv']:.1f} %",  'fa-shield-halved', '#1976D2', '#E3F2FD'),
         _kpi('Recettes 2050',      f"{d40['Recettes_M']/1000:,.2f} Md", 'fa-coins',        '#1565C0', '#E3F2FD'),
+=======
+        _kpi('Cotisants 2066',     f"{d40['CT_total']:,.0f}",    'fa-users',        '#1976D2', '#E3F2FD'),
+        _kpi('Pensionnaires 2066', f"{d40['NbPens_total']:,.0f}", 'fa-person-cane', '#0D47A1', '#E3F2FD'),
+        _kpi('Solde cumulé 2066',  f"{sol_fin/1000:,.1f} Md",     'fa-scale-balanced',
+             '#1B5E20' if viable else '#C62828',
+             '#E8F5E9' if viable else '#FFEBEE'),
+        _kpi('Couverture 2066',    f"{d40['Taux_couv']:.1f} %",  'fa-shield-halved', '#1976D2', '#E3F2FD'),
+        _kpi('Recettes 2066',      f"{d40['Recettes_M']/1000:,.2f} Md", 'fa-coins',        '#1565C0', '#E3F2FD'),
+>>>>>>> 8bafdf18f3d3f2a4d47aacb4857bc87cb3bc0122
     ])
 
     fgt_avant = [INDICATEURS_BASE['FGT0'], INDICATEURS_BASE['FGT1'], INDICATEURS_BASE['FGT2']]

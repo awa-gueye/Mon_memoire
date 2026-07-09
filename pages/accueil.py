@@ -94,8 +94,13 @@ layout = html.Div([
             _stat('60 000',    'Cotisants en 2027'),
             _stat('4',         'Paquets de couverture'),
             _stat('6',         'Branches de protection'),
+<<<<<<< HEAD
             _stat('24 ans',    'Horizon de projection'),
             _stat('2027-2050', 'Période simulée'),
+=======
+            _stat('40 ans',    'Horizon de projection'),
+            _stat('2027-2066', 'Période simulée'),
+>>>>>>> 8bafdf18f3d3f2a4d47aacb4857bc87cb3bc0122
         ]),
     ]),
 
@@ -106,7 +111,11 @@ layout = html.Div([
             html.Div(className='section-sep'),
             html.Div(className='sn-features', children=[
                 _feature('01', 'fa-chart-line', 'Tableau de bord',
+<<<<<<< HEAD
                          "Visualisez les projections de recettes, dépenses et soldes sur 24 ans.",
+=======
+                         "Visualisez les projections de recettes, dépenses et soldes sur 40 ans.",
+>>>>>>> 8bafdf18f3d3f2a4d47aacb4857bc87cb3bc0122
                          'Accéder', 'feat-dashboard'),
                 _feature('02', 'fa-user-check', 'Simulation individuelle',
                          "Estimez la cotisation et les gains nets d'un adhérent type.",
@@ -175,7 +184,11 @@ layout = html.Div([
                 html.Div(className='card', children=[
                     html.Div(className='card-icon', children=[html.I(className='fa-solid fa-scale-balanced')]),
                     html.H3('Viabilité et redistributivité', className='card-title'),
+<<<<<<< HEAD
                     html.P("Le modèle projette recettes, dépenses et soldes sur 24 ans et mesure "
+=======
+                    html.P("Le modèle projette recettes, dépenses et soldes sur 40 ans et mesure "
+>>>>>>> 8bafdf18f3d3f2a4d47aacb4857bc87cb3bc0122
                            "l'impact via les indices FGT et le coefficient de Gini, avant et après "
                            "introduction du régime.",
                            className='card-text'),
