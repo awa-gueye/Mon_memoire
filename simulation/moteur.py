@@ -9,26 +9,32 @@ ANNEE_DEBUT = 2027
 ANNEE_FIN   = 2050
 N_ANNEES    = ANNEE_FIN - ANNEE_DEBUT + 1        # 24
 
-# Indicateurs redistributifs AVANT reforme (microdonnees EHCVM 2021-2022)
+# Indicateurs redistributifs AVANT reforme (EHCVM 2021-2022 ACTUALISEE en 2026,
+# aging statique, taux ANSD). FGT recalcules sur la base 2026 ; Gini et depenses
+# catastrophiques inchanges (l'actualisation preserve les ratios).
 INDICATEURS_BASE = {
-    "FGT0": 0.2421, "FGT1": 0.0531, "FGT2": 0.0181,
-    "Gini": 0.3092, "CAT10": 0.0648, "CAT40": 0.0112,
+    "FGT0": 0.2332, "FGT1": 0.0505, "FGT2": 0.0172,
+    "Gini": 0.3093, "CAT10": 0.0648, "CAT40": 0.0112,
 }
 
-# Indicateurs en cas de COUVERTURE UNIVERSELLE (potentiel). Calibres a partir
-# des notebooks (methode deterministe) : a la couverture de reference (6,77 %)
-# on retrouve exactement FGT0 0,2397 ; FGT1 0,0524 ; FGT2 0,0178 ; Gini 0,3093 ;
-# CAT10 6,48%->~6,05% ; CAT40 1,12%->~1,05%.
+# Indicateurs en cas de COUVERTURE UNIVERSELLE (potentiel), base 2026.
+# Recalcules avec la methode du notebook 02 (fonction indices() : depense par
+# tete + gain net = prestations attendues - cotisations), appliquee a 100 % de
+# la population cible. L'effet monetaire sur la pauvrete est faible (les gains
+# nets sont modestes) ; l'effet protecteur majeur porte sur les depenses
+# catastrophiques de sante (CAT10 6,48 % -> 0,21 %). Les valeurs FGT ci-dessous
+# remplacent l'ancienne calibration (FGT0 0,2065) qui etait incoherente avec la
+# fonction indices() du notebook.
 INDICATEURS_POTENTIEL = {
-    "FGT0": 0.2065, "FGT1": 0.04276, "FGT2": 0.01366,
-    "Gini": 0.31069, "CAT10": 0.0021, "CAT40": 0.0000,
+    "FGT0": 0.2318, "FGT1": 0.0502, "FGT2": 0.0171,
+    "Gini": 0.3095, "CAT10": 0.0021, "CAT40": 0.0000,
 }
 
 PARAMS_REF = {
     "N0_B": 50000, "N0_A": 8000, "N0_O": 1500, "N0_Pl": 500,
     # alpha = taux d'accroissement annuel des cotisants (delta_n = alpha*(1+beta)^n)
     "alpha": 0.04, "beta": 0.01, "tau_abd": 0.0, "tau_inf": 0.02,
-    "SMIG": 64224, "gamma": 0.10, "CMU_an": 7000,
+    "SMIG": 64223, "gamma": 0.10, "CMU_an": 7000,
     # taux_atmp = frequence annuelle d'accident (p_at) ; dur_at = duree moyenne d'ITT (jours)
     "plaf_css": 63000, "taux_atmp": 0.03, "dur_at": 30, "alloc_fam": 2600,
     "ISF": 4.0, "alloc_pre": 20250, "alloc_mat": 54000,
@@ -192,7 +198,7 @@ def simuler(params_utilisateur=None):
 
         # Impact redistributif : methode deterministe par interpolation.
         # Indicateur(c) = (1-c)*valeur_avant + c*valeur_potentielle, c = couverture.
-        taux_couv = sum(N_curr.values()) / 1_663_513
+        taux_couv = sum(N_curr.values()) / 1_889_085
         cc = min(max(taux_couv, 0.0), 1.0)
         def interp(cle):
             return (1 - cc) * INDICATEURS_BASE[cle] + cc * INDICATEURS_POTENTIEL[cle]
