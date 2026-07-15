@@ -38,6 +38,67 @@ PARAMS_REF = {
     # taux_atmp = frequence annuelle d'accident (p_at) ; dur_at = duree moyenne d'ITT (jours)
     "plaf_css": 63000, "taux_atmp": 0.03, "dur_at": 30, "alloc_fam": 2600,
     "ISF": 4.0, "alloc_pre": 20250, "alloc_mat": 54000,
+
+    # ══════════════════════════════════════════════════════════════════════
+    # MODULE CGU - PARAMETRES DU DECIDEUR
+    # Seuls figurent ici les parametres que l'administration fiscale detient
+    # ou fixe : taux, minimums de perception, forfaits du projet de code,
+    # statistiques d'enrolement (fichier DGID). Les grandeurs observees dans
+    # l'enquete (chiffre d'affaires, composition sectorielle) sont des
+    # constantes de donnees, definies plus bas (DONNEES_EHCVM).
+    # Sources : CGI art. 134-141 ; SN_Sim_Tool VII 2025 (feuille "Impots
+    # directs (2)") ; processus SenSim (02. Income Tax joint.do).
+    # ══════════════════════════════════════════════════════════════════════
+
+    # --- Regime tarifaire : 0 = code en vigueur, 1 = nouveau projet de code ---
+    "regime_cgu": 0,
+
+    # --- Taux proportionnels et minimums de perception (CGI art. 134-141) ---
+    "taux_serv": 0.05,  "min_serv": 35000,   # prestataires de services
+    "taux_prod": 0.02,  "min_prod": 25000,   # producteurs et revendeurs
+
+    # --- Forfaits du projet de code (FCFA/an), tous modifiables -------------
+    # Transport public de personnes
+    "fft_tp_16":  130000,   # 16 places ou moins
+    "fft_tp_35":  170000,   # 17 a 35 places
+    "fft_tp_45":  225000,   # 36 a 45 places
+    "fft_tp_46":  330000,   # 46 places ou plus
+    # Transport public de marchandises
+    "fft_tm_10":  190000,   # <= 10 t / 10 000 L
+    "fft_tm_15":  245000,   # 10 a 15 t
+    "fft_tm_24":  320000,   # 15 a 24 t
+    "fft_tm_25":  415000,   # > 24 t, tracteurs
+    # Commerce de detail
+    "fft_cd_mag": 100000,   # magasins
+    "fft_cd_bou":  50000,   # boutiques
+    "fft_cd_int":  25000,   # catalogue / internet
+    "fft_cd_tab":  15000,   # tabliers
+    "fft_cd_amb":  10000,   # marchands ambulants
+    # Artisanat
+    "fft_ar_fab": 100000,   # fabrication (ebeniste, tailleur)
+    "fft_ar_ali": 100000,   # alimentation (boulanger, patissier)
+    "fft_ar_bat":  50000,   # batiment (plombier, electricien)
+    "fft_ar_ser":  50000,   # service (coiffeur, mecanicien)
+    "fft_ar_aut":  25000,   # autres (potier, horloger, boucher)
+
+    # --- Repartition des contribuables forfaitaires par categorie -----------
+    # Donnee que la DGID detient dans son fichier des contribuables.
+    # Defaut : dominance du commerce de detail, coherente avec la composition
+    # sectorielle de la population cible (EHCVM). Somme ramenee a 1.
+    "part_fft_com": 0.65,   # commerce de detail
+    "part_fft_art": 0.20,   # artisanat
+    "part_fft_tp":  0.10,   # transport de personnes
+    "part_fft_tm":  0.05,   # transport de marchandises
+
+    # --- Enrolement a la CGU (statistiques DGID) ----------------------------
+    "stock_cgu_0": 60000,   # contribuables CGU effectivement enroles au depart
+    "g_cgu_seul":  0.03,    # croissance annuelle de l'enrolement, CGU seule
+    # part des adherents au regime social non deja contribuables CGU :
+    # l'effet d'attraction de la protection sociale (rendement de la
+    # collaboration entre administrations sociale et fiscale)
+    "part_nouveaux": 0.60,
+    # taux d'actualisation du cout net de l'Etat et des gains de recettes
+    "a_actu": 0.05,
     "dur_conge": 98, "taux_ipres": 0.14, "VPS0": 24.75,
     "lambda_sa": 0.50,
     "lambda_at_B": 0.40,  # 40% - calibre sur donnees EHCVM (sous-estimation revenus)
@@ -60,6 +121,114 @@ DEMO = {
 }
 
 PAQUETS = ["B", "A", "O", "Pl"]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MICRODONNEES DE LA POPULATION CIBLE CGU (EHCVM 2021-2022 actualisee 2026)
+#
+# Chaque ligne represente un assujetti, avec son chiffre d'affaires observe,
+# son regime tarifaire deduit de sa branche d'activite (CITI, comme dans
+# SenSim), la famille de forfait a laquelle il appartient dans le nouveau
+# projet de code (transport, commerce de detail, artisanat), son paquet et
+# son poids de sondage. C'est exactement la logique de SenSim : la CGU due
+# est calculee individu par individu, jamais a partir d'une moyenne inconnue.
+# ══════════════════════════════════════════════════════════════════════════════
+import os
+_CSV = os.path.join(os.path.dirname(__file__), "cible_cgu_2026.csv")
+CIBLE_CGU = pd.read_csv(_CSV)
+PAQUETS = ["B", "A", "O", "Pl"]
+
+# Repartition observee (ponderee, base 2026)
+CIBLE_TOTALE  = float(CIBLE_CGU["poids"].sum())
+CIBLE_PAR_PAQUET = (CIBLE_CGU.groupby("paquet")["poids"].sum() / CIBLE_TOTALE).to_dict()
+
+
+def cgu_individuelle(p):
+    """CGU annuelle due par chaque assujetti de la population cible.
+
+    Reproduit exactement la logique de SenSim (02. Income Tax joint.do) :
+
+    - Regime en vigueur : pour chaque individu, CGU = max(taux x CA, minimum),
+      ou (taux, minimum) depend du regime tarifaire (services, ciment/denrees,
+      autres producteurs et revendeurs).
+
+    - Nouveau projet de code : les acteurs relevant du transport, du commerce
+      de detail ou de l'artisanat basculent sur un forfait de leur categorie
+      (moyenne des paliers officiels, chacun modifiable dans les parametres).
+      Les autres restent au regime proportionnel. Les activites mixtes
+      identifiees basculent au regime RGUMIX (4 %).
+
+    Retourne un vecteur (Serie) alignee sur CIBLE_CGU, en FCFA par an.
+    """
+    df = CIBLE_CGU
+    reforme = int(p.get("regime_cgu", 0)) == 1
+
+    # Regime proportionnel : services (RGU1) et autres producteurs (RGU3).
+    # Les revendeurs de ciment/denrees (regime 2) sont assimiles au regime des
+    # producteurs et revendeurs, conformement au code en vigueur.
+    du_serv = np.maximum(p["taux_serv"] * df["ca"], p["min_serv"])
+    du_prod = np.maximum(p["taux_prod"] * df["ca"], p["min_prod"])
+    du = np.where(df["regime"] == 1, du_serv, du_prod)
+
+    if reforme:
+        # Forfait moyen de chaque famille, tel que retenu par SenSim.
+        f_tp = (p["fft_tp_16"] + p["fft_tp_35"] + p["fft_tp_45"] + p["fft_tp_46"]) / 4
+        f_tm = (p["fft_tm_10"] + p["fft_tm_15"] + p["fft_tm_24"] + p["fft_tm_25"]) / 4
+        f_cd = (p["fft_cd_mag"] + p["fft_cd_bou"] + p["fft_cd_int"]
+                + p["fft_cd_tab"] + p["fft_cd_amb"]) / 5
+        f_ar = (p["fft_ar_fab"] + p["fft_ar_ali"] + p["fft_ar_bat"]
+                + p["fft_ar_ser"] + p["fft_ar_aut"]) / 5
+        fam = df["famille"].values
+        du = np.where(fam == "TR", f_tp,
+             np.where(fam == "CO", f_cd,
+             np.where(fam == "AR", f_ar, du)))
+    return pd.Series(du, index=df.index)
+
+
+def cgu_par_paquet(p):
+    """CGU annuelle moyenne (ponderee) due par un assujetti, par paquet."""
+    cgu = cgu_individuelle(p)
+    df = CIBLE_CGU
+    return {pk: float(np.average(cgu[df["paquet"] == pk],
+                                 weights=df.loc[df["paquet"] == pk, "poids"]))
+            for pk in PAQUETS}
+
+
+def cgu_moyenne(p):
+    """CGU annuelle moyenne ponderee sur toute la population cible."""
+    cgu = cgu_individuelle(p)
+    return float(np.average(cgu, weights=CIBLE_CGU["poids"]))
+
+
+# Table decorative des forfaits officiels, affichee dans l'onglet CGU.
+FORFAITS_CGU = {
+    "Transport public de personnes": {
+        "16 places ou moins": ("fft_tp_16", 130000),
+        "17 a 35 places":     ("fft_tp_35", 170000),
+        "36 a 45 places":     ("fft_tp_45", 225000),
+        "46 places ou plus":  ("fft_tp_46", 330000),
+    },
+    "Transport public de marchandises": {
+        "10 tonnes / 10 000 L ou moins": ("fft_tm_10", 190000),
+        "10 a 15 tonnes / 15 000 L":     ("fft_tm_15", 245000),
+        "15 a 24 tonnes / 24 000 L":     ("fft_tm_24", 320000),
+        "Plus de 24 tonnes, tracteurs":  ("fft_tm_25", 415000),
+    },
+    "Commerce de detail": {
+        "Magasins":                    ("fft_cd_mag", 100000),
+        "Boutiques":                   ("fft_cd_bou",  50000),
+        "Catalogue ou site internet":  ("fft_cd_int",  25000),
+        "Tabliers":                    ("fft_cd_tab",  15000),
+        "Marchands ambulants":         ("fft_cd_amb",  10000),
+    },
+    "Artisanat": {
+        "Fabrication (ebeniste, tailleur)":    ("fft_ar_fab", 100000),
+        "Alimentation (boulanger, patissier)": ("fft_ar_ali", 100000),
+        "Batiment (plombier, electricien)":    ("fft_ar_bat",  50000),
+        "Service (coiffeur, mecanicien)":      ("fft_ar_ser",  50000),
+        "Autres (potier, horloger, boucher)":  ("fft_ar_aut",  25000),
+    },
+}
 
 
 def fusionner_params(pu):
@@ -130,6 +299,13 @@ def simuler(params_utilisateur=None):
     N0 = {pk: p[f"N0_{pk}"] for pk in PAQUETS}
 
     rows, N, NbPens, sol_cum = [], {pk: float(N0[pk]) for pk in PAQUETS}, {"O":0.,"Pl":0.}, 0.
+
+    # ── Module CGU : tarifs et cumuls actualises ─────────────────────────────
+    CGU_PK  = cgu_par_paquet(p)                       # CGU due par paquet
+    # CGU annuelle moyenne sur toute la population cible (moyenne ponderee
+    # des CGU individuelles issues des microdonnees EHCVM).
+    CGU_MOY = cgu_moyenne(p)
+    sub_actu_cum = rcgu_seul_actu = rcgu_comb_actu = 0.0
     # Historique des effectifs par paquet (pour calculer les eligibles par carence)
     hist = {pk: [] for pk in PAQUETS}     # hist[pk][k] = effectif du paquet pk a l'annee k+1
 
@@ -196,6 +372,41 @@ def simuler(params_utilisateur=None):
 
         sol_ann = rec - dep; sol_cum += sol_ann
 
+        # ══════════════════════════════════════════════════════════════════
+        # MODULE CGU : enrolement et recettes, avec et sans combinaison
+        # ══════════════════════════════════════════════════════════════════
+        cible_cgu = CIBLE_TOTALE
+
+        # --- Scenario 1 : CGU SEULE (pas de combinaison) -------------------
+        # L'enrolement progresse au seul rythme de l'administration fiscale.
+        n_cgu_seul = min(p["stock_cgu_0"] * (1 + p["g_cgu_seul"]) ** (n - 1),
+                         cible_cgu)
+
+        # --- Scenario 2 : CGU COMBINEE a la protection sociale -------------
+        # L'adhesion au regime social suppose d'etre en regle de CGU. Une part
+        # des adherents (part_nouveaux) n'etait pas contribuable : ils entrent
+        # dans le champ fiscal par la porte sociale.
+        n_social   = sum(N_curr.values())
+        nouveaux   = n_social * p["part_nouveaux"]
+        n_cgu_comb = min(n_cgu_seul + nouveaux, cible_cgu)
+
+        # --- Recettes de CGU ------------------------------------------------
+        r_cgu_seul = n_cgu_seul * CGU_MOY * inf
+        r_cgu_comb = n_cgu_comb * CGU_MOY * inf
+        gain_collab = r_cgu_comb - r_cgu_seul          # gain de la collaboration
+
+        # CGU securisee aupres des seuls cotisants du regime social
+        # (structure reelle du regime, non celle de la population cible)
+        r_cgu_social = sum(N_curr[pk] * CGU_PK[pk] for pk in PAQUETS) * inf
+
+        # --- Position budgetaire de l'Etat ----------------------------------
+        sub  = sum(N_curr[pk] * c[pk]["S_etat"] * 12 * inf for pk in PAQUETS)
+        cnet = sub - r_cgu_social                      # negatif = favorable
+        disc = (1 + p["a_actu"]) ** (n - 1)
+        sub_actu_cum   += sub        / disc
+        rcgu_seul_actu += r_cgu_seul / disc
+        rcgu_comb_actu += r_cgu_comb / disc
+
         # Impact redistributif : methode deterministe par interpolation.
         # Indicateur(c) = (1-c)*valeur_avant + c*valeur_potentielle, c = couverture.
         taux_couv = sum(N_curr.values()) / 1_889_085
@@ -222,6 +433,24 @@ def simuler(params_utilisateur=None):
             "Solde_annuel_M": sol_ann/1e6,
             "Solde_cumule_M": sol_cum/1e6,
             "Taux_couv": taux_couv*100,
+            # ── Module CGU ──
+            "CGU_moy": CGU_MOY,
+            "CGU_B_du": CGU_PK["B"], "CGU_A_du": CGU_PK["A"],
+            "CGU_O_du": CGU_PK["O"], "CGU_Pl_du": CGU_PK["Pl"],
+            "N_cgu_seul": n_cgu_seul,
+            "N_cgu_comb": n_cgu_comb,
+            "Nouveaux_cgu": nouveaux,
+            "Taux_cgu_seul": n_cgu_seul / cible_cgu * 100,
+            "Taux_cgu_comb": n_cgu_comb / cible_cgu * 100,
+            "R_cgu_seul_M": r_cgu_seul/1e6,
+            "R_cgu_comb_M": r_cgu_comb/1e6,
+            "Gain_collab_M": gain_collab/1e6,
+            "R_cgu_seul_actu_cum_M": rcgu_seul_actu/1e6,
+            "R_cgu_comb_actu_cum_M": rcgu_comb_actu/1e6,
+            "Gain_collab_actu_cum_M": (rcgu_comb_actu - rcgu_seul_actu)/1e6,
+            # ── Position budgetaire de l'Etat ──
+            "Sub_M": sub/1e6, "R_cgu_M": r_cgu_social/1e6, "Cnet_M": cnet/1e6,
+            "Sub_actu_cum_M": sub_actu_cum/1e6,
             "S_trav_B": c["B"]["S_trav"], "S_trav_A": c["A"]["S_trav"],
             "S_trav_O": c["O"]["S_trav"], "S_trav_Pl": c["Pl"]["S_trav"],
             "FGT0_ap": fgt0_ap, "FGT1_ap": fgt1_ap, "FGT2_ap": fgt2_ap,

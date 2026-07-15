@@ -38,6 +38,7 @@ def navbar():
         ('/', 'accueil',    'fa-house',        'Accueil'),
         ('/parametres',  'params',    'fa-sliders',      'Paramètres'),
         ('/dashboard',   'dashboard', 'fa-chart-line',   'Tableau de bord'),
+        ('/cgu',         'cgu',       'fa-file-invoice-dollar', 'CGU'),
         ('/resultats',   'resultats', 'fa-table',        'Résultats'),
         ('/simulation',  'simul',     'fa-user-check',   'Simulation individuelle'),
     ]
@@ -193,6 +194,7 @@ NAV_BTNS = {
     'nav-accueil':   '/',
     'nav-params':    '/parametres',
     'nav-dashboard': '/dashboard',
+    'nav-cgu':       '/cgu',
     'nav-resultats': '/resultats',
     'nav-simul':     '/simulation',
 }
@@ -222,7 +224,7 @@ def navigate(*args):
 
 @callback(
     [Output(f'nav-{p}', 'className')
-     for p in ['accueil', 'params', 'dashboard', 'resultats', 'simul']],
+     for p in ['accueil', 'params', 'dashboard', 'cgu', 'resultats', 'simul']],
     Input('url', 'pathname'),
     prevent_initial_call=False,
 )
@@ -231,10 +233,11 @@ def update_nav_active(pathname):
         'accueil':   '/',
         'params':    '/parametres',
         'dashboard': '/dashboard',
+        'cgu':       '/cgu',
         'resultats': '/resultats',
         'simul':     '/simulation',
     }
-    order = ['accueil', 'params', 'dashboard', 'resultats', 'simul']
+    order = ['accueil', 'params', 'dashboard', 'cgu', 'resultats', 'simul']
     path = (pathname or '/').rstrip('/') or '/'
     if path not in pm.values():        # tout chemin inconnu retombe sur l'accueil
         path = '/'                     # (coherent avec le fallback de render_page)
@@ -251,6 +254,7 @@ def render_page(pathname, params_data):
     from pages.accueil      import layout as pg_acc
     from pages.parametres   import layout as pg_par
     from pages.dashboard    import build_dashboard
+    from pages.cgu          import build_cgu
     from pages.resultats    import build_resultats
     from pages.simulation   import layout as pg_sim
     from simulation.moteur  import simuler
@@ -263,6 +267,8 @@ def render_page(pathname, params_data):
         return pg_par
     if pathname == '/dashboard':
         return build_dashboard(simuler(params_data or {}))
+    if pathname == '/cgu':
+        return build_cgu(simuler(params_data or {}), params_data or {})
     if pathname == '/resultats':
         return build_resultats(simuler(params_data or {}))
     if pathname == '/simulation':
