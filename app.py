@@ -8,10 +8,13 @@ from dash import dcc, html, callback, Input, Output, State
 app = dash.Dash(
     __name__,
     suppress_callback_exceptions=True,
-    serve_locally=False,   # charge plotly.js et les libs depuis un CDN rapide
-    external_stylesheets=[
-        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
-    ],
+    serve_locally=True,    # sert React, dash-renderer et plotly.js depuis le
+                           # serveur lui-meme (pas de dependance a un CDN
+                           # externe : fonctionne hors-ligne et derriere un
+                           # reseau restrictif).
+    # Font Awesome est servi localement depuis assets/fontawesome/ (charge
+    # automatiquement par Dash). Aucune ressource externe n'est requise pour
+    # que l'application s'affiche.
     title='CGU Social - Sénégal',
 )
 server = app.server
@@ -175,8 +178,11 @@ def assistant_widget():
 
 # ── Layout principal ─────────────────────────────────────────────────────────
 app.layout = html.Div([
-    dcc.Store(id='store-params', storage_type='memory', data={}),
-    dcc.Store(id='store-nav',    storage_type='memory', data='/'),
+    # storage_type='session' : les paramètres simulés survivent à la navigation
+    # entre onglets et ne sont effacés qu'à la fermeture de l'onglet du
+    # navigateur (ou via le bouton Réinitialiser).
+    dcc.Store(id='store-params', storage_type='session', data={}),
+    dcc.Store(id='store-nav',    storage_type='memory',  data='/'),
     dcc.Location(id='url', refresh=False),
     dcc.Download(id='dl-excel'),
     navbar(),

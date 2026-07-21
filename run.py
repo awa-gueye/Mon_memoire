@@ -1,5 +1,5 @@
 """
-run.py — Point d'entrée du dashboard
+run.py - Point d'entrée du dashboard
 =====================================
 Lancement :
     cd Dashboard_cgu_corrige
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     cle_ok = bool(os.environ.get('HF_TOKEN')) or os.path.exists(
         os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
     print("=" * 55)
-    print("  Dashboard CGU Social — Sénégal")
+    print("  Dashboard CGU Social - Sénégal")
     print("  Ouvrir : http://127.0.0.1:8050")
     print("  Assistant IA :", "actif (cle detectee)" if cle_ok
           else "inactif (definir HF_TOKEN ou creer .env)")

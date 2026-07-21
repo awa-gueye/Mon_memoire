@@ -1,4 +1,4 @@
-"""pages/parametres.py — Paramètres du modèle, organisés en sous-onglets.
+"""pages/parametres.py - Paramètres du modèle, organisés en sous-onglets.
 
 Quatre catégories : Démographie, Économique, Subventions, CGU. Seuls des
 paramètres directement observables ou fixés par le décideur figurent ici :
@@ -20,7 +20,8 @@ def _sl(pid, label, default, mn, mx, step, note=None):
         ]),
         dcc.Slider(id=f'sl-{pid}', min=mn, max=mx, step=step, value=default,
                    marks=None, tooltip={'placement': 'bottom', 'always_visible': False},
-                   className='param-slider'),
+                   className='param-slider',
+                   persistence=True, persistence_type='session'),
         *([html.P(note, className='param-note')] if note else []),
     ])
 
@@ -33,7 +34,8 @@ def _sp(pid, label, default, mn, mx, step, note=None):
         ]),
         dcc.Slider(id=f'sl-{pid}', min=mn, max=mx, step=step, value=default,
                    marks=None, tooltip={'placement': 'bottom', 'always_visible': False},
-                   className='param-slider'),
+                   className='param-slider',
+                   persistence=True, persistence_type='session'),
         *([html.P(note, className='param-note')] if note else []),
     ])
 
@@ -53,21 +55,20 @@ def _card(icone, titre, enfants):
 
 _onglet_demo = html.Div(className='g2', style={'alignItems': 'start'}, children=[
     html.Div([
-        _card('fa-users', 'Effectifs initiaux N_p', [
-            _sl('N0_B',  'Paquet Bronze  (N0_B)',  50000, 5000, 200000, 1000),
-            _sl('N0_A',  'Paquet Argent  (N0_A)',   8000, 1000,  50000,  500),
-            _sl('N0_O',  'Paquet Or      (N0_O)',   1500,  100,  10000,  100),
-            _sl('N0_Pl', 'Paquet Platine (N0_Pl)',   500,   50,   5000,   50),
+        _card('fa-users', 'Effectifs initiaux par paquet', [
+            _sl('N0_B',  'Paquet Bronze',  50000, 5000, 200000, 1000),
+            _sl('N0_A',  'Paquet Argent',   8000, 1000,  50000,  500),
+            _sl('N0_O',  'Paquet Or',       1500,  100,  10000,  100),
+            _sl('N0_Pl', 'Paquet Platine',   500,   50,   5000,   50),
         ]),
     ]),
     html.Div([
         _card('fa-chart-line', "Dynamique d'adhésion", [
-            _sp('alpha', "Taux d'accroissement annuel α (%)", 4, 1, 12, 0.5,
-                note="δₙ = α × (1+β)ⁿ. Calibré en deçà des taux d'enrôlement observés "
-                     "au Brésil (8 %), en Argentine (7 %) et au Maroc (5 %) : hypothèse "
-                     "prudente."),
-            _sp('beta', "Taux d'amélioration β (%)", 1, 0, 5, 0.5,
-                note="Renforcement progressif de la notoriété du régime."),
+            _sp('alpha', "Taux d'accroissement annuel des cotisants (%)", 4, 1, 12, 0.5,
+                note="Calibré en deçà des taux d'enrôlement observés au Brésil (8 %), "
+                     "en Argentine (7 %) et au Maroc (5 %) : hypothèse prudente."),
+            _sp('beta', "Taux d'amélioration annuel (%)", 1, 0, 5, 0.5,
+                note="Renforcement progressif de la notoriété du régime au fil des années."),
         ]),
     ]),
 ])
@@ -102,23 +103,20 @@ _onglet_eco = html.Div(className='g2', style={'alignItems': 'start'}, children=[
 
 _onglet_sub = html.Div(className='g2', style={'alignItems': 'start'}, children=[
     html.Div([
-        _card('fa-hand-holding-dollar', "Taux de subvention λ_b (%)", [
-            _sp('lambda_sa',   'Santé — tous paquets',         50, 0, 80, 5,
+        _card('fa-hand-holding-dollar', "Taux de subvention par branche (%)", [
+            _sp('lambda_sa',   'Santé : tous paquets',           50, 0, 80, 5,
                 note="Reproduit le cofinancement public de la CMU."),
-            _sp('lambda_at_B', 'AT/MP — Bronze',               40, 0, 80, 2),
-            _sp('lambda_ma',   'Maternité — A, O, Platine',    70, 0, 90, 5,
+            _sp('lambda_at_B', 'AT/MP : Bronze',                 40, 0, 80, 2),
+            _sp('lambda_ma',   'Maternité : Argent, Or, Platine', 70, 0, 90, 5,
                 note="Traduit la politique de gratuité des soins obstétricaux."),
-            _sp('lambda_pf',   'Prest. familiales — A, O, Pl', 60, 0, 80, 5),
+            _sp('lambda_pf',   'Prestations familiales : Argent, Or, Platine', 60, 0, 80, 5),
         ]),
     ]),
     html.Div([
         _card('fa-piggy-bank', 'Branches longues', [
-            _sp('lambda_id',    'Invalidité/Décès — O, Pl', 30, 0, 60, 5),
-            _sp('lambda_re_O',  'Retraite — Or',            50, 0, 70, 5),
-            _sp('lambda_re_Pl', 'Retraite — Platine',       40, 0, 70, 5),
-            html.P("Les branches contributives de long terme reposent davantage "
-                   "sur l'assuré, conformément à leur logique assurantielle.",
-                   className='param-note'),
+            _sp('lambda_id',    'Invalidité/Décès : Or, Platine', 30, 0, 60, 5),
+            _sp('lambda_re_O',  'Retraite : Or',                  50, 0, 70, 5),
+            _sp('lambda_re_Pl', 'Retraite : Platine',             40, 0, 70, 5),
         ]),
     ]),
 ])
@@ -140,12 +138,13 @@ _onglet_cgu = html.Div([
         dcc.RadioItems(
             id='sl-regime_cgu',
             options=[
-                {'label': "  Code général des impôts en vigueur (art. 134–141)", 'value': 0},
+                {'label': "  Code général des impôts en vigueur (art. 134 à 141)", 'value': 0},
                 {'label': "  Nouveau projet de code de l'administration fiscale", 'value': 1},
             ],
             value=0,
             labelStyle={'display': 'block', 'marginBottom': '0.35rem',
                         'fontSize': '0.9rem'},
+            persistence=True, persistence_type='session',
         ),
         html.P("Le code en vigueur applique un taux proportionnel au chiffre "
                "d'affaires (5 % pour les services, 2 % pour les producteurs et "
@@ -173,12 +172,14 @@ _onglet_cgu = html.Div([
         ]),
     ]),
 
-    # Forfaits du nouveau projet de code — modifiables
+    # Forfaits du nouveau projet de code - modifiables.
+    # Ce bloc n'est visible que si le régime « Nouveau projet de code » est
+    # sélectionné ci-dessus (callback toggle_forfaits).
+    html.Div(id='bloc-forfaits', children=[
     _card('fa-file-invoice-dollar',
           "Forfaits du nouveau projet de code (FCFA/an)", [
         html.P("Ces montants sont appliqués aux assujettis relevant des "
-               "catégories concernées lorsque le régime « Nouveau projet de code » "
-               "est activé ci-dessus. Chaque palier est modifiable pour tester "
+               "catégories concernées. Chaque palier est modifiable pour tester "
                "des réformes à venir.", className='param-note',
                style={'marginBottom': '0.8rem'}),
 
@@ -228,37 +229,25 @@ _onglet_cgu = html.Div([
             ]),
         ]),
     ]),
+    ]),  # fin html.Div(id='bloc-forfaits')
 
-    # Enrôlement et effet de la collaboration
-    html.Div(className='g2', style={'alignItems': 'start',
-                                     'marginTop': '1.2rem'}, children=[
-        html.Div([
-            _card('fa-user-check', "Enrôlement à la CGU (source DGID)", [
-                _sl('stock_cgu_0', 'Contribuables CGU actuellement enrôlés',
-                    60000, 0, 500000, 5000,
-                    note="Stock effectif de contribuables CGU, tel qu'il figure "
-                         "dans le fichier de la DGID. Distinct de la population "
-                         "éligible (~1,89 million d'assujettis identifiés dans "
-                         "l'EHCVM), qui est fixée par les données."),
-                _sp('g_cgu_seul',
-                    "Croissance annuelle propre à l'administration fiscale (%)",
-                    3, 0, 15, 0.5,
-                    note="Rythme d'enrôlement obtenu sans contrepartie sociale, "
-                         "par l'effort de recouvrement de la DGID."),
-            ]),
-        ]),
-        html.Div([
-            _card('fa-handshake', "Effet de la collaboration avec le régime social", [
-                _sp('part_nouveaux',
-                    "Adhérents sociaux non déjà contribuables CGU (%)",
-                    60, 0, 100, 5,
-                    note="Paramètre central du module. Représente la part des "
-                         "adhérents au régime social qui n'étaient pas contribuables "
-                         "CGU auparavant : c'est l'effet d'attraction de la "
-                         "protection sociale, et donc le rendement fiscal de la "
-                         "collaboration entre administrations sociale et fiscale. "
-                         "À 0 %, la collaboration ne rapporte rien."),
-            ]),
+    # Enrôlement à la CGU
+    html.Div(style={'marginTop': '1.2rem'}, children=[
+        _card('fa-user-check', "Enrôlement à la CGU", [
+            _sl('stock_cgu_0', 'Contribuables CGU au démarrage',
+                60000, 0, 500000, 5000,
+                note="Nombre de contribuables CGU déjà enrôlés en 2027. "
+                     "Cette valeur reprend automatiquement la somme des effectifs "
+                     "initiaux saisis dans l'onglet Démographie, afin de rester "
+                     "cohérente : les premiers cotisants du régime sont, par "
+                     "construction, des contribuables CGU en règle. Vous pouvez "
+                     "toutefois l'ajuster librement."),
+            _sp('g_cgu_seul',
+                "Croissance annuelle de l'enrôlement (%)",
+                3, 0, 15, 0.5,
+                note="Rythme de progression du nombre de contribuables CGU au fil "
+                     "des années, sous l'effet du recouvrement de l'administration "
+                     "fiscale."),
         ]),
     ]),
 ])
@@ -322,7 +311,7 @@ SL_PCT = ['alpha', 'beta', 'tau_inf', 'gamma', 'a_actu',
           'lambda_sa', 'lambda_at_B', 'lambda_ma', 'lambda_pf',
           'lambda_id', 'lambda_re_O', 'lambda_re_Pl',
           'taux_serv', 'taux_prod',
-          'g_cgu_seul', 'part_nouveaux']
+          'g_cgu_seul']
 
 ALL_SL = SL_ABS + SL_PCT
 
@@ -383,7 +372,7 @@ for _sid in SL_PCT:
 # ── Reset ────────────────────────────────────────────────────────────────
 
 @callback(
-    [Output(f'sl-{s}', 'value') for s in ALL_SL],
+    [Output(f'sl-{s}', 'value', allow_duplicate=True) for s in ALL_SL],
     Output('sl-regime_cgu', 'value'),
     Input('btn-reset', 'n_clicks'),
     prevent_initial_call=True,
@@ -392,3 +381,37 @@ def reset(_):
     abs_vals = [PARAMS_REF.get(s, 0) for s in SL_ABS]
     pct_vals = [round(PARAMS_REF.get(s, 0) * 100, 2) for s in SL_PCT]
     return abs_vals + pct_vals + [0]
+
+
+# ── Filtre du régime tarifaire : afficher les forfaits seulement pour le
+#    « Nouveau projet de code » ───────────────────────────────────────────
+
+@callback(
+    Output('bloc-forfaits', 'style'),
+    Input('sl-regime_cgu', 'value'),
+    prevent_initial_call=False,
+)
+def toggle_forfaits(regime):
+    # regime == 1 -> Nouveau projet de code : on affiche les forfaits.
+    # regime == 0 -> Code en vigueur : on masque tout le bloc.
+    if int(regime or 0) == 1:
+        return {'display': 'block'}
+    return {'display': 'none'}
+
+
+# ── Cohérence : l'enrôlement CGU au démarrage suit la somme des effectifs
+#    initiaux saisis dans l'onglet Démographie ─────────────────────────────
+
+@callback(
+    Output('sl-stock_cgu_0', 'value', allow_duplicate=True),
+    Input('sl-N0_B', 'value'),
+    Input('sl-N0_A', 'value'),
+    Input('sl-N0_O', 'value'),
+    Input('sl-N0_Pl', 'value'),
+    prevent_initial_call=True,
+)
+def sync_stock_cgu(nb, na, no, npl):
+    total = sum(v or 0 for v in (nb, na, no, npl))
+    # Le slider stock_cgu_0 a un pas de 5000 et un plafond de 500000.
+    total = min(total, 500000)
+    return int(round(total / 5000.0) * 5000)

@@ -1,5 +1,5 @@
 """
-wsgi.py — Point d'entrée de PRODUCTION (deploiement)
+wsgi.py - Point d'entrée de PRODUCTION (deploiement)
 =====================================================
 Utilise par le serveur de production (gunicorn). Il importe l'application
 ET tous les modules de pages, afin que l'ensemble des callbacks soient bien

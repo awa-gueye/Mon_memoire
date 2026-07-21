@@ -1,4 +1,4 @@
-"""pages/cgu.py — Onglet CGU du tableau de bord.
+"""pages/cgu.py - Onglet CGU du tableau de bord.
 
 Met en valeur la CGU (recettes projetées, taux de couverture) et mesure ce
 que l'administration fiscale gagne à collaborer avec l'administration sociale.
@@ -44,20 +44,20 @@ def build_cgu(df, params=None):
     d1, dF = df.iloc[0], df.iloc[-1]
     gain_cum = dF['Gain_collab_actu_cum_M']
 
-    # Indicateurs clés — six cartes
+    # Indicateurs clés - six cartes
     kpis = html.Div(className='kpi-grid', children=[
-        _kpi("Contribuables CGU en 2050 (sans collaboration)",
+        _kpi("Contribuables CGU en 2050, sans le régime social",
              f"{dF['N_cgu_seul']:,.0f}", 'fa-user', SEUL, '#F1F5F9'),
-        _kpi("Contribuables CGU en 2050 (avec collaboration)",
+        _kpi("Contribuables CGU en 2050, avec le régime social",
              f"{dF['N_cgu_comb']:,.0f}", 'fa-user-plus', COMB, '#E3F2FD'),
-        _kpi("Nouveaux contribuables attirés en 2050",
+        _kpi("Contribuables supplémentaires apportés par le régime",
              f"{dF['Nouveaux_cgu']:,.0f}", 'fa-arrow-trend-up', GAIN, '#E8F5E9'),
-        _kpi("Recettes CGU 2050 (avec collaboration)",
+        _kpi("Recettes de CGU en 2050, avec le régime social",
              f"{dF['R_cgu_comb_M']/1000:,.2f} Md", 'fa-coins', COMB, '#E3F2FD'),
         _kpi("Gain de recettes en 2050",
              f"+{dF['Gain_collab_M']/1000:,.2f} Md",
              'fa-hand-holding-dollar', GAIN, '#E8F5E9'),
-        _kpi("Gain cumulé actualisé 2027–2050",
+        _kpi("Gain de recettes cumulé, actualisé (2027 à 2050)",
              f"{gain_cum/1000:,.1f} Md", 'fa-sack-dollar', GAIN, '#E8F5E9'),
     ])
 
@@ -65,19 +65,20 @@ def build_cgu(df, params=None):
     encart = html.Div(className='chart-card', style={
         'background': 'linear-gradient(135deg,#E8F5E9 0%,#F1F8F4 100%)',
         'borderLeft': f'4px solid {GAIN}'}, children=[
-        html.H3("L'intérêt de la collaboration entre administrations",
+        html.H3("Ce que le régime social apporte à la CGU",
                 className='chart-title'),
         html.P([
-            "En adossant la protection sociale à la CGU, l'administration fiscale "
-            f"attire {dF['Nouveaux_cgu']:,.0f} contribuables supplémentaires à "
-            f"l'horizon 2050, portant le taux de couverture de la CGU de "
-            f"{dF['Taux_cgu_seul']:.2f} % à {dF['Taux_cgu_comb']:.2f} % de la "
-            "population éligible. ",
-            html.Strong(f"Le gain de recettes cumulé, actualisé, s'élève à "
-                        f"{gain_cum/1000:,.1f} milliards de FCFA sur la période "
-                        "2027–2050."),
-            " Ce gain mesure ce que la puissance publique recouvre en plus parce "
-            "que la contrepartie sociale incite à la déclaration.",
+            "Pour cotiser au régime social, un travailleur doit être en règle de "
+            "CGU. Le régime ramène donc dans le champ fiscal des travailleurs qui "
+            "n'y figuraient pas : ",
+            html.Strong(f"{dF['Nouveaux_cgu']:,.0f} contribuables supplémentaires "
+                        f"à l'horizon 2050"),
+            f", soit un enrôlement porté de {dF['Taux_cgu_seul']:.2f} % à "
+            f"{dF['Taux_cgu_comb']:.2f} % de la population éligible. ",
+            html.Strong(f"Le gain de recettes cumulé, actualisé, atteint "
+                        f"{gain_cum/1000:,.1f} milliards de FCFA sur 2027 à 2050."),
+            " C'est ce que la puissance publique recouvre en plus grâce à l'effet "
+            "d'entraînement de la protection sociale sur la déclaration.",
         ], className='chart-sub', style={'fontSize': '0.95rem', 'lineHeight': '1.6'}),
     ])
 
@@ -100,26 +101,30 @@ def build_cgu(df, params=None):
 
             html.Div(className='g2', children=[
                 _chart("Enrôlement à la CGU",
-                       "Nombre de contribuables, selon que la CGU est adossée "
-                       "ou non à la protection sociale",
+                       "Nombre de contribuables au fil des années, sans le régime "
+                       "social (rythme fiscal seul) et avec le régime social "
+                       "(cotisants sociaux ramenés dans le champ fiscal). L'écart "
+                       "entre les deux courbes se creuse d'année en année.",
                        _fig_enrolement(df), '340px'),
                 _chart("Taux de couverture de la CGU",
-                       "Part de la population éligible effectivement enrôlée",
+                       "Part de la population éligible effectivement enrôlée, dans "
+                       "les deux cas",
                        _fig_taux(df), '340px'),
             ]),
 
             _chart("Recettes de CGU projetées",
-                   "Comparaison des deux scénarios ; l'aire verte matérialise "
-                   "le gain attribuable à la collaboration",
+                   "Comparaison des deux cas ; l'aire verte matérialise le gain "
+                   "de recettes apporté par le régime social",
                    _fig_recettes(df), '430px'),
 
             html.Div(className='g2', children=[
-                _chart("Gain annuel de la collaboration",
-                       "Recettes supplémentaires de CGU, par année",
+                _chart("Gain annuel apporté par le régime social",
+                       "Recettes de CGU supplémentaires, année par année",
                        _fig_gain(df), '320px'),
-                _chart("Sensibilité à l'effet d'attraction",
-                       "Gain cumulé actualisé selon la part des adhérents "
-                       "sociaux qui n'étaient pas déjà contribuables",
+                _chart("Effet du rythme d'adhésion sur le gain fiscal",
+                       "Gain de recettes cumulé, actualisé, selon le taux "
+                       "d'accroissement annuel des cotisants du régime social. "
+                       "La barre verte correspond au scénario en cours.",
                        _fig_sensibilite(params), '320px'),
             ]),
 
@@ -187,22 +192,26 @@ def _fig_gain(df):
 
 
 def _fig_sensibilite(params):
-    """Gain cumulé actualisé selon part_nouveaux : le graphe qui répond au
-    coordonnateur. À 0 % d'effet d'attraction, le gain est nul ; plus l'effet
-    est fort, plus la collaboration rapporte."""
-    parts = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    """Gain fiscal cumulé selon le rythme d'adhésion au régime social.
+
+    Question du décideur : « si le régime social attire plus (ou moins) de
+    monde, combien la CGU récupère-t-elle en plus ? » On fait varier le taux
+    d'accroissement annuel des cotisants (alpha) et on lit le gain de recettes
+    cumulé, actualisé, sur 2027-2050. Plus le régime social se diffuse vite,
+    plus il ramène de contribuables dans le champ fiscal."""
+    taux = [0.02, 0.03, 0.04, 0.06, 0.08]
     gains = []
-    for pn in parts:
-        pp = dict(params or {}); pp['part_nouveaux'] = pn
+    for a in taux:
+        pp = dict(params or {}); pp['alpha'] = a
         gains.append(simuler(pp).iloc[-1]['Gain_collab_actu_cum_M'] / 1000)
-    ref = (params or {}).get('part_nouveaux', 0.60)
-    cols = [GAIN if abs(p - ref) < 1e-6 else 'rgba(46,158,91,0.42)' for p in parts]
+    ref = (params or {}).get('alpha', 0.04)
+    cols = [GAIN if abs(a - ref) < 1e-6 else 'rgba(46,158,91,0.42)' for a in taux]
     fig = go.Figure(go.Bar(
-        x=[f'{int(p*100)} %' for p in parts], y=gains, marker_color=cols,
-        text=[f'{g:,.0f}' for g in gains], textposition='outside',
+        x=[f'{int(a*100)} %' for a in taux], y=gains, marker_color=cols,
+        text=[f'{g:,.1f}' for g in gains], textposition='outside',
         textfont=dict(size=10)))
     fig.update_layout(**PB, showlegend=False)
-    fig.update_xaxes(title_text="Part des adhérents non déjà contribuables")
+    fig.update_xaxes(title_text="Taux d'accroissement annuel des cotisants")
     fig.update_yaxes(title_text='Gain cumulé (Md)', ticksuffix=' Md')
     return fig
 

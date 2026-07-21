@@ -373,27 +373,46 @@ def simuler(params_utilisateur=None):
         sol_ann = rec - dep; sol_cum += sol_ann
 
         # ══════════════════════════════════════════════════════════════════
-        # MODULE CGU : enrolement et recettes, avec et sans combinaison
+        # MODULE CGU : enrolement et recettes fiscales
+        #
+        # Deux trajectoires d'enrolement a la CGU sont comparees :
+        #
+        #  1. SANS le regime social : le nombre de contribuables progresse au
+        #     seul rythme de recouvrement de l'administration fiscale
+        #     (g_cgu_seul), a partir du stock de depart.
+        #
+        #  2. AVEC le regime social : pour cotiser au regime, il faut etre en
+        #     regle de CGU. Les cotisants du regime social qui ne figuraient
+        #     pas encore dans le fichier fiscal entrent donc dans le champ de
+        #     la CGU. La trajectoire combinee = enrolement fiscal de base
+        #     + cotisants sociaux venus s'ajouter (part non deja enrolee).
+        #
+        # Cette construction lie directement l'enrolement combine a la
+        # dynamique reelle du regime social (le meme effectif que le reste de
+        # l'application), et non a un parametre exogene. La divergence entre
+        # les deux courbes est donc l'effet propre du regime social.
         # ══════════════════════════════════════════════════════════════════
         cible_cgu = CIBLE_TOTALE
 
-        # --- Scenario 1 : CGU SEULE (pas de combinaison) -------------------
-        # L'enrolement progresse au seul rythme de l'administration fiscale.
+        # --- Trajectoire 1 : enrolement fiscal SANS regime social ----------
         n_cgu_seul = min(p["stock_cgu_0"] * (1 + p["g_cgu_seul"]) ** (n - 1),
                          cible_cgu)
 
-        # --- Scenario 2 : CGU COMBINEE a la protection sociale -------------
-        # L'adhesion au regime social suppose d'etre en regle de CGU. Une part
-        # des adherents (part_nouveaux) n'etait pas contribuable : ils entrent
-        # dans le champ fiscal par la porte sociale.
-        n_social   = sum(N_curr.values())
-        nouveaux   = n_social * p["part_nouveaux"]
-        n_cgu_comb = min(n_cgu_seul + nouveaux, cible_cgu)
+        # --- Trajectoire 2 : enrolement AVEC regime social -----------------
+        # Les cotisants du regime social (sum N_curr) sont tous en regle de
+        # CGU. Le supplement d'enrolement apporte par le regime est la part de
+        # ces cotisants qui depasse le stock deja enrole au fil de la montee
+        # en charge fiscale. On l'estime par l'ecart entre l'effectif social
+        # et le stock initial deja compte dans la trajectoire fiscale.
+        n_social      = sum(N_curr.values())
+        apport_social = max(0.0, n_social - p["stock_cgu_0"])
+        n_cgu_comb    = min(n_cgu_seul + apport_social, cible_cgu)
 
         # --- Recettes de CGU ------------------------------------------------
-        r_cgu_seul = n_cgu_seul * CGU_MOY * inf
-        r_cgu_comb = n_cgu_comb * CGU_MOY * inf
-        gain_collab = r_cgu_comb - r_cgu_seul          # gain de la collaboration
+        r_cgu_seul  = n_cgu_seul * CGU_MOY * inf
+        r_cgu_comb  = n_cgu_comb * CGU_MOY * inf
+        gain_collab = r_cgu_comb - r_cgu_seul          # gain du a l'effet social
+        nouveaux    = n_cgu_comb - n_cgu_seul          # contribuables supplementaires
 
         # CGU securisee aupres des seuls cotisants du regime social
         # (structure reelle du regime, non celle de la population cible)
